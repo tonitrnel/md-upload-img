@@ -8,4 +8,4 @@
 
 更改`uploads.js`文件中`domain`,`key`,`client`字段
 
-命令行输入`node uploads [文件地址]`
+命令行输入`node uploads.js [文件地址]`
