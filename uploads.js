@@ -18,6 +18,10 @@ if(!filename){
     console.error('未指定文件，请带上文件地址');
     return;
 }
+if(!fs.existsSync(filename)){
+    console.error('文件不存在');
+    return;
+}
 fs.readFile(filename,'utf8',((err, data) => {
     if(err){
         console.error(err);
