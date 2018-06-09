@@ -5,12 +5,12 @@ const fs = require('fs');
 const tinify = require('tinify');
 const mime = require('mime');
 const qn = require('qn');
-const domain = 'https://r.wktrf.com/';
-tinify.key = 'mdN5Svehl0AnwA9JSHPyRnvjXZ6q2bQZ';
+const domain = '';
+tinify.key = '';
 const client = qn.create({
-    accessKey:'Zn3N6ZXphoD25LC3gBTJMzTEGzEX-3GTOftcsKVi',
-    secretKey:'wAiCKE0vy_2qJA1YG7cQtptBylKFLGr6RufRX5dZ',
-    bucket:'dreams',
+    accessKey:'',
+    secretKey:'',
+    bucket:'',
     uploadURL:'https://up-z2.qiniup.com'
 });
 let filename = process.argv[2];
