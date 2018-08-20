@@ -1,20 +1,16 @@
 /**
  * Created By wktrf on 2018/6/9.
  */
-import fs from 'fs';
-import tinify from 'tinify';
-import mime from 'mime';
-import markdown from 'markdown-it';
-import qn from 'qn';
-markdown = markdown();
-const domain = 'https://r.wktrf.com';
-tinify.key = 'xlbhXJjzGKEnFedbZro4iCme8op77nhG';
-const client = qn.create({
-    accessKey: '6LIBEj55NH-8RR-IBvb8IxJ_-coSmVQBJPPOyXxD',
-    secretKey: 'BmNWKBUZrecuOcnp0wVtuAI4_Hx8THSAGtXCwtCb',
-    bucket: 'dreams',
-    uploadURL: 'https://up-z2.qiniup.com'
-});
+const fs  = require('fs');
+const tinify = require('tinify');
+const mime = require('mime');
+const markdown = require('markdown-it')();
+const qn = require('qn');
+const exec = require('child_process').exec;
+const config = require('./config');
+const domain = config.domain;;
+tinify.key = config.tinify;
+const client = qn.create(config.qiniu);
 let filename = process.argv[2];
 if (!filename) {
     console.error('未指定文件，请带上文件地址');
@@ -30,9 +26,11 @@ fs.readFile(filename, 'utf8', ((err, data) => {
     parseImg(data).then(async (res) => {
         let data_list = [...new Set(res)]; // 数组去重
         let index = 0;
+        let jump = 0;
         for (let _p of data_list) {
             // 判断是否本地图片
             if (/[https|http|ftp]+:\/\//.test(_p)) {
+                jump++;
                 continue;
             }
             if (fs.existsSync(_p)) {
@@ -43,8 +41,19 @@ fs.readFile(filename, 'utf8', ((err, data) => {
             }
         }
         fs.writeFileSync(filename, data);
-        console.log(`执行完成，共上传${index}个文件，失败${res.length - index}个文件`);
-        fs.writeFileSync(filename+'.txt',markdown.render(data))
+        let output_file_name = `${filename.replace(/^(.+)\..+$/g, '$1')}.txt`;
+        console.log(`执行完成，共上传${index}个文件，跳过${jump}，失败${data_list.length - index - jump}个文件`);
+        if(fs.existsSync(output_file_name)){
+            output_file_name = filename+'.txt';
+            fs.writeFileSync(output_file_name,markdown.render(data))
+        }else{
+            fs.writeFileSync(output_file_name,markdown.render(data))
+        }
+        exec('notepad '+output_file_name,{encoding:'utf8'},(...r)=>{
+            console.log('清理垃圾文件启动');
+            // 清理垃圾文件
+            fs.unlinkSync(output_file_name);
+        });
     });
 }));
 let parseImg = (data) => {
@@ -53,7 +62,7 @@ let parseImg = (data) => {
             reject('type error');
             return;
         }
-        let regx = /!\[.*?\]\((.*)\)/g;
+        let regx = /!\[.*?\]\((.*?)\)/g;
         let list = [];
         data.replace(regx, (...args) => {
             list.push(args[1]);
